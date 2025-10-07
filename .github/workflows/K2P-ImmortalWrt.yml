@@ -1,30 +1,25 @@
 name: K2P-ImmortalWrt
 
 on:
-  repository_dispatch:
   workflow_dispatch:
-    inputs:
-      ssh:
-        description: 'SSH connection to Actions'
-        required: true
-        default: 'true'
+  workflow_call:
+  # schedule:
+  #   - cron: 0 20 * * *
 
 env:
   REPO_URL: https://github.com/xueshanjuelian/immortalwrt.git
-  REPO_BRANCH: master
+  REPO_BRANCH: openwrt-23.05
   CONFIG_FILE: configs/K2P.config
   DIY_SCRIPT: scripts/Roc-script.sh
   CLASH_KERNEL: amd64
   UPLOAD_BIN_DIR: false
   FIRMWARE_RELEASE: true
-  FIRMWARE_TAG: gehua_ghl-r-001
+  FIRMWARE_TAG: RAX3000M&K2P
   TZ: Asia/Shanghai
 
 jobs:
-   _openwrt:
+  Build:
     runs-on: ubuntu-22.04
-    permissions:
-      contents: write
 
     steps:
     - name: Check Server Performance(检查服务器性能)
@@ -53,12 +48,18 @@ jobs:
     - name: Checkout(检出代码)
       uses: actions/checkout@main
 
-    - name: Clone source code ==> 【克隆Openwrt源代码】
-      working-directory: /mnt/workdir
+    - name: Clone Source Code(克隆源代码)
       run: |
-        df -hT $PWD
-        git clone $REPO_URL -b $REPO_BRANCH openwrt
-        ln -sf /mnt/workdir/openwrt $GITHUB_WORKSPACE/openwrt
+        df -hT $GITHUB_WORKSPACE
+        sudo mkdir -p /mnt/openwrt
+        sudo chown -R $(id -u):$(id -g) /mnt/openwrt
+        git clone --depth 1 -b $REPO_BRANCH --single-branch $REPO_URL /mnt/openwrt
+        cd /mnt/openwrt
+        echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
+        VERSION_INFO=$(git show -s --date=short --format="作者: %an<br/>时间: %cd<br/>内容: %s<br/>hash: %H")
+        echo "VERSION_INFO=$VERSION_INFO" >> $GITHUB_ENV
+        VERSION_KERNEL=$(grep -oP 'LINUX_KERNEL_HASH-\K[0-9]+\.[0-9]+\.[0-9]+' include/kernel-5.15)
+        echo "VERSION_KERNEL=$VERSION_KERNEL" >> $GITHUB_ENV
 
     - name: Generate Variables(生成变量)
       run: |
