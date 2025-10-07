@@ -53,18 +53,12 @@ jobs:
     - name: Checkout(检出代码)
       uses: actions/checkout@main
 
-    - name: Clone Source Code(克隆源代码)
+    - name: Clone source code ==> 【克隆Openwrt源代码】
+      working-directory: /mnt/workdir
       run: |
-        df -hT $GITHUB_WORKSPACE
-        sudo mkdir -p /mnt/openwrt
-        sudo chown -R $(id -u):$(id -g) /mnt/openwrt
-        git clone --depth 1 -b $REPO_BRANCH --single-branch $REPO_URL /mnt/openwrt
-        cd /mnt/openwrt
-        echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
-        VERSION_INFO=$(git show -s --date=short --format="作者: %an<br/>时间: %cd<br/>内容: %s<br/>hash: %H")
-        echo "VERSION_INFO=$VERSION_INFO" >> $GITHUB_ENV
-        VERSION_KERNEL=$(grep -oP 'LINUX_KERNEL_HASH-\K[0-9]+\.[0-9]+\.[0-9]+' include/kernel)
-        echo "VERSION_KERNEL=$VERSION_KERNEL" >> $GITHUB_ENV
+        df -hT $PWD
+        git clone $REPO_URL -b $REPO_BRANCH openwrt
+        ln -sf /mnt/workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
     - name: Generate Variables(生成变量)
       run: |
