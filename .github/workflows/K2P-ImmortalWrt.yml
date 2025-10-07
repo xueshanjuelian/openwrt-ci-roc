@@ -1,10 +1,13 @@
 name: K2P-ImmortalWrt
 
 on:
+  repository_dispatch:
   workflow_dispatch:
-  workflow_call:
-  # schedule:
-  #   - cron: 0 20 * * *
+    inputs:
+      ssh:
+        description: 'SSH connection to Actions'
+        required: true
+        default: 'true'
 
 env:
   REPO_URL: https://github.com/xueshanjuelian/immortalwrt.git
